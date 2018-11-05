@@ -33,12 +33,13 @@ class siamese(object):
         #build convnet to use in each siamese 'leg'
         self.model = Sequential()
 
-        self.model.add(Conv2D(32, kernel_size=(5, 5), strides=(1, 1),activation='relu',input_shape=input_shape))
+        self.model.add(Conv2D(16, kernel_size=(5, 5), strides=(1, 1),activation='relu',input_shape=input_shape))
         self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-        self.model.add(Conv2D(64, (5, 5), activation='relu'))
+        self.model.add(Conv2D(32, (3, 3), activation='relu'))
         self.model.add(MaxPooling2D(pool_size=(2, 2)))
         self.model.add(Flatten())
-        self.model.add(Dense(1000, activation='relu'))
+        self.model.add(Dense(500, activation='relu'))
+        self.model.add(Dense(100, activation='relu'))
         self.model.add(Dense(10, activation='relu'))
         #encode each of the two inputs into a vector with the convnet
         encoded_l = self.model(left_input)

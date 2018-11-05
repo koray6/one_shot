@@ -27,8 +27,8 @@ def main():
     sm=siamese(32,3)
     #sys.exit(0)
     evaluate_every = 7000
-    loss_every=10
-    batch_size = 32
+    loss_every=100
+    batch_size = 10
     N_way = 20
     n_val = 550
     #siamese_net.load_weights("PATH")

@@ -21,8 +21,10 @@ class Siamese_Loader:
         self.Xtrain=np.zeros((numclasses,len(Xtrain),32,32,3))
         print("Got number of distinct classes as ",numclasses)
         print("Got new shape of Xtrain as ",self.Xtrain.shape)
+        self.valid_tuple=[]
         for i in range(len(Ytrain)): #Warning !! not an efficient implementation, dictionary is recommended 
             self.Xtrain[Ytrain[i],i,:,:,:]=Xtrain[i]
+            self.valid_tuple.append([Ytrain[i],i])
         #print("Got new Xtrain as ",self.Xtrain)
         self.Xval = Xval
         #self.Xtrain = Xtrain
@@ -33,21 +35,22 @@ class Siamese_Loader:
     def get_batch(self,n):
         """Create batch of n pairs, half same class, half different class"""
         categories = rng.choice(self.n_classes,size=(n,),replace=True)
-        #print("Got categories ",categories)
-        pairs=[np.zeros((n, self.h, self.w,3)) for i in range(2)] #Will create 2 dummy 0 image arrays
+        valid_choice=rng.choice(len(self.valid_tuple),size=(n,),replace=True)
+        pairs=[np.zeros((n*n, self.h, self.w,3)) for i in range(2)] #Will create 2 dummy 0 image arrays
 
         #print("pairs look like ",pairs[0][1].shape)
-        targets=np.zeros((n,)) #Placeholder for the labels of images
+        targets=np.zeros((n*n,)) #Placeholder for the labels of images
         #print("Shape of targets ",targets.shape)
-        targets[n//2:] = 1 #Will assign the last half of the array as 1
-        for i in range(n):
-            category = categories[i]
-            idx_1 = rng.randint(0,self.n_examples)
-            pairs[0][i,:,:,:] = self.Xtrain[category,idx_1].reshape(self.w,self.h,3)
-            idx_2 = rng.randint(0,self.n_examples)
-            #pick images of same class for 1st half, different for 2nd
-            category_2 = category if i >= n//2 else (category + rng.randint(1,self.n_classes)) % self.n_classes
-            pairs[1][i,:,:,:] = self.Xtrain[category_2,idx_2].reshape(self.w,self.h,3)
+        for i in range(int(len(valid_choice))):
+            for j in range(int(len(valid_choice))):
+                t1=self.valid_tuple[valid_choice[i]][0][0]
+                t2=self.valid_tuple[valid_choice[j]][0][0]
+                pairs[0][n*i+j,:,:,:] = self.Xtrain[self.valid_tuple[valid_choice[i]][0][0],self.valid_tuple[valid_choice[i]][1]].reshape(self.w,self.h,3)
+                pairs[1][n*i+j,:,:,:] = self.Xtrain[self.valid_tuple[valid_choice[j]][0][0],self.valid_tuple[valid_choice[j]][1]].reshape(self.w,self.h,3)
+                if(t1==t2):
+                    targets[n*i+j]=1
+                else:
+                    targets[n*i+j]=0
         return pairs, targets
 
     def make_oneshot_task(self,N):
